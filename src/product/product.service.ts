@@ -1,4 +1,3 @@
-// product.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -90,10 +89,13 @@ export class ProductService {
     return await this.productRepository.findOne({ where: { id: product.id }, relations: ['packages'] });
   }
 
-  async findAll(): Promise<Product[]> {
-    return this.productRepository.find({
+  async findAll(page: number = 1, limit: number = 10): Promise<{ products: Product[], total: number }> {
+    const [products, total] = await this.productRepository.findAndCount({
       relations: ['packages'],
+      take: limit,
+      skip: (page - 1) * limit,
     });
+    return { products, total };
   }
 
   async findOne(id: number): Promise<Product> {
